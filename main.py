@@ -1,3 +1,6 @@
+# The debris are separated to two parts, and are plotted in blue for x>0 and in red for x<0.
+# We can find an important region for debris and mark them in red.
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -67,12 +70,12 @@ def Satellite_Loader(load_mode):
              
 # Quest Position
 r0=6300
-def Satellite_Position_given_time(satellite, num):
+def Satellite_Position_given_time(satellite, i):
     x=[]
     y=[]
     z=[]
     
-    t=ts.utc(2014, 1, 18, 1, 35.625+num)
+    t=ts.utc(2014, 1, 18, 1, 35.625+i)
     
     if satellite==[]:
         pass
@@ -93,7 +96,8 @@ def Satellite_Position_given_time(satellite, num):
             y.append(r*np.sin(phi/180*np.pi)*np.sin(theta/180*np.pi))
             z.append(r*np.cos(theta/180*np.pi))
     return x, y, z
-def Satellite_Position(satellite,num):
+
+def Satellite_Position(satellite):
     x=[]
     y=[]
     z=[]
@@ -118,66 +122,84 @@ def Satellite_Position(satellite,num):
             z.append(r*np.cos(theta/180*np.pi))
     return x, y, z
 
-def update_points_given_time(num, x, y, z, points):
-    x,y,z=Satellite_Position_given_time(satellite, num)
+def update_plot_given_time(i):
+    axlistx = []
+    axlisty = []
+    axlistz = []
+    bxlistx = []
+    bxlisty = []
+    bxlistz = []
     
-    # calculate the new sets of coordinates here. The resulting arrays should have the same shape
-    # as the original x,y,z
-    new_x = x
-    new_y = y
-    new_z = z
+    x,y,z=Satellite_Position_given_time(satellite, i)
+    
+    #seperates Data in two parts
+    for j in range(len(x)):
+        if x[j]<=0:
+            axlistx.append(x[j])
+            axlisty.append(y[j])        
+            axlistz.append(z[j])
+        else:  
+            bxlistx.append(x[j])
+            bxlisty.append(y[j])        
+            bxlistz.append(z[j])
+            
+    scat._offsets3d = (axlistx,axlisty,axlistz)
+    scat2._offsets3d = (bxlistx,bxlisty,bxlistz)
 
-
-    # update properties
-    points.set_data(new_x,new_y)
-    points.set_3d_properties(new_z, 'z')
+def update_plot(i):
+    axlistx = []
+    axlisty = []
+    axlistz = []
+    bxlistx = []
+    bxlisty = []
+    bxlistz = []
     
-    # return modified artists
-    return points
-def update_points(num, x, y, z, points):
+    x,y,z=Satellite_Position(satellite)
     
-    x,y,z=Satellite_Position(satellite,num)
-    
-    # calculate the new sets of coordinates here. The resulting arrays should have the same shape
-    # as the original x,y,z
-    new_x = x
-    new_y = y
-    new_z = z
-
-
-    # update properties
-    points.set_data(new_x,new_y)
-    points.set_3d_properties(new_z, 'z')
-    
-    # return modified artists
-    return points
+    #seperates Data in two parts
+    for j in range(len(x)):
+        if x[j]<=0:
+            axlistx.append(x[j])
+            axlisty.append(y[j])        
+            axlistz.append(z[j])
+        else:  
+            bxlistx.append(x[j])
+            bxlisty.append(y[j])        
+            bxlistz.append(z[j])
+            
+    scat._offsets3d = (axlistx,axlisty,axlistz)
+    scat2._offsets3d = (bxlistx,bxlisty,bxlistz)
 
 
 if __name__ == '__main__':
     satellite = Satellite_Loader(load_mode)
-    x,y,z=Satellite_Position(satellite, 0)
     
     fig = plt.figure()
-    ax = p3.Axes3D(fig)
-    init = [[4, 6],
-           [ 4, 6],
-           [ 4, 6]]
-    points, = ax.plot(x, y, z, '*')
+    ax = fig.add_subplot(111, projection='3d')
+
+
+    ax.set_xlim(-1.5,1.5)
+    ax.set_ylim(-1.5,1.5)
+    ax.set_zlim(-1.5,1.5)
     
     ax.set_xlim3d([-1.5, 1.5])
     ax.set_ylim3d([-1.5, 1.5])
     ax.set_zlim3d([-1.5, 1.5])
     
-    ax.set_xlabel('X Label')
-    ax.set_ylabel('Y Label')
-    ax.set_zlabel('Z Label')
+    ax.set_xlabel('z')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    
+    #plot data to the same axes
+    scat = ax.scatter([], [], color='red', marker='*') 
+    scat2 = ax.scatter([], [], color = 'blue', marker = '*')
     
     # Specify simulating Mode
     mode = 'given_time'
     
     if mode =='real_time':
-        ani=animation.FuncAnimation(fig, update_points, frames=11, interval = 1000, fargs=(x, y, z, points))
+        anim = animation.FuncAnimation(fig, update_plot, frames=20, interval=1000)
     if mode =='given_time':
-        ani=animation.FuncAnimation(fig, update_points_given_time, frames=11, interval = 1000, fargs=(x, y, z, points))
+        ani=animation.FuncAnimation(fig, update_plot_given_time, frames=20, interval=1000)
     
     plt.show()

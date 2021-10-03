@@ -1,3 +1,6 @@
+# The debris are separated to two parts, and are plotted in blue for x>0 and in red for x<0.
+# We can find an important region for debris and mark them in red.
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -45,7 +48,9 @@ def Satellite_Position_given_time(satellite, i):
     y=[]
     z=[]
     
+
     t=ts.utc(2021, 10, 5, 1, 35.625+i)
+
     
     if satellite==[]:
         pass
@@ -91,6 +96,7 @@ def Satellite_Position(satellite):
             y.append(r*np.sin(phi/180*np.pi)*np.sin(theta/180*np.pi))
             z.append(r*np.cos(theta/180*np.pi))
     return x, y, z
+
 
 def HST_Position(HST):
     t = ts.now()
@@ -141,9 +147,11 @@ def update_plot(i):
     bxlistx = []
     bxlisty = []
     bxlistz = []
+
     
     x,y,z=Satellite_Position(satellite)
     
+
     #seperates Data in two parts
     for j in range(len(x)):
         if x[j]<=0:
@@ -157,6 +165,7 @@ def update_plot(i):
             
     scat._offsets3d = (axlistx,axlisty,axlistz)
     scat2._offsets3d = (bxlistx,bxlisty,bxlistz)
+
 
 def update_plot_satellite_protect(i):
     axlistx = []
@@ -193,23 +202,29 @@ def update_plot_satellite_protect(i):
     
 if __name__ == '__main__':
     satellite = Satellite_Loader(load_mode)
+
     HST=HST_Loader(load_mode)
     
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
+
     
     ax.set_xlim3d([-1.5, 1.5])
     ax.set_ylim3d([-1.5, 1.5])
     ax.set_zlim3d([-1.5, 1.5])
     
+
     ax.set_xlabel('x')
+
     ax.set_ylabel('y')
     ax.set_zlabel('z')
     
     #plot data to the same axes
+
     scat = ax.scatter([], [], color='red', marker='.') 
     scat2 = ax.scatter([], [], color = 'blue', marker = '.')
     scat3 = ax.scatter([], [], color = 'black', marker = '*')
+
     
     # Specify simulating Mode
     mode = 'satellite_protect'
@@ -220,5 +235,6 @@ if __name__ == '__main__':
         ani=animation.FuncAnimation(fig, update_plot_given_time, frames=20, interval=1000)
     if mode =='satellite_protect':
         ani=animation.FuncAnimation(fig, update_plot_satellite_protect, frames=20, interval=1000)
+
     
     plt.show()

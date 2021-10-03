@@ -1,5 +1,17 @@
-# The debris are separated to two parts, and are plotted in blue for x>0 and in red for x<0.
-# We can find an important region for debris and mark them in red.
+# NASA Space APPs Challenge: Mapping Space Trash in Real Time
+# Team: Taiwan No. 1
+# Team member: Che-Jui Chang, Wen-Hua Wu, Che-Hao Chang and Le-Yen Lin
+# Three modes are developed in our program, including “real_time” mode, “given_time” mode and “satellite_protect” mode.
+# In the “real_time” mode, we track the locations of all the currently tracked debris in Earth orbit.
+# In the “given_time” mode, we predict the locations of all the currently tracked debris in Earth orbit at any given time.
+# As the debris enter a chosen region, they are marked in red color, otherwise they are in blue.
+# In the “satellite_protect” mode, the orbital parameters of Hubble Space Telescope (HST) is imported, 
+# and the distances between the HST and the debris are calculated.
+# If the distance between the HST and debris is smaller than a certain length, 
+# we consider the HST is threatened by the debris, and the debris is marked in red color.
+
+# The modes can be specified in line 242.
+# In the "given_time" mode, the time can be given in line 65, and the increment of time is specified in line 64.
 
 import numpy as np
 import pandas as pd
@@ -24,7 +36,7 @@ def Satellite_Loader(load_mode):
     satellite=[]
     with open("FuLL_Catalog.txt") as f:
         lines=f.readlines()
-        (c,d)=(0,10000)  #決定選取範圍
+        (c,d)=(0,10000)  #Determine the selected range of data
         for m in range(c,d,3):
             for line in lines[m:m+3]:
                 if 'DEB' in line:
@@ -35,6 +47,7 @@ def Satellite_Loader(load_mode):
                     satellite.append(satellites)
         return satellite
 
+# Load HST's orbital parameters
 def HST_Loader(load_mdoe):
     line1 = '1 20580U 90037B   21273.81193127  .00001057  00000-0  52853-4 0  9991'
     line2 = '2 20580  28.4698  87.8983 0002801 115.5815 264.4960 15.09755843527196'
@@ -48,8 +61,8 @@ def Satellite_Position_given_time(satellite, i):
     y=[]
     z=[]
     
-
-    t=ts.utc(2021, 10, 5, 1, 35.625+i)
+    dt=1 # increment of time
+    t=ts.utc(2021, 10, 5, 1, 35.625+i*dt)
 
     
     if satellite==[]:
@@ -96,7 +109,6 @@ def Satellite_Position(satellite):
             y.append(r*np.sin(phi/180*np.pi)*np.sin(theta/180*np.pi))
             z.append(r*np.cos(theta/180*np.pi))
     return x, y, z
-
 
 def HST_Position(HST):
     t = ts.now()
@@ -178,7 +190,10 @@ def update_plot_satellite_protect(i):
     cxlisty = []
     cxlistz = []
     
+    #Read the debris position
     x,y,z=Satellite_Position(satellite)
+    
+    #
     x1,y1,z1=HST_Position(HST)
     
     #seperates Data in two parts
@@ -208,7 +223,7 @@ if __name__ == '__main__':
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    
+    #Set the range of plot
     ax.set_xlim3d([-1.5, 1.5])
     ax.set_ylim3d([-1.5, 1.5])
     ax.set_zlim3d([-1.5, 1.5])
